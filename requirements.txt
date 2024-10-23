@@ -1,0 +1,5 @@
+cohere
+speechrecognition
+pyqt6
+pyaudio
+requests

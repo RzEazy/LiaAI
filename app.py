@@ -4,7 +4,7 @@ import time
 from lia_ai import Lia  # Your assistant class
 
 # Initialize the assistant with your API key and memory file location
-lia = Lia(api_key='T1Bc1ugk1s3scjMkgKCqXDk6l8utMuBcHABskBoR', memory_file='lia_memory.json')
+lia = Lia(api_key='Provide your own cohere api key', memory_file='lia_memory.json')
 
 def chat():
     print("Lia: Hey there!  I'm here to assist and chat with you. What’s on your mind?")

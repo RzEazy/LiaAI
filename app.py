@@ -1,9 +1,11 @@
 # app.py
 import threading
 import time
-from lia_ai import Lia  # Your assistant class
+from lia_ai import Lia  
 
 # Initialize the assistant with your API key and memory file location
+# Head to cohere's official website and sign-in to get your own api key.
+
 lia = Lia(api_key='Provide your own cohere api key', memory_file='lia_memory.json')
 
 def chat():

@@ -1,50 +1,5 @@
 {
-    "conversations": [
-        {
-            "user": "hello!",
-            "lia": "Hi! I'm Lia, here to help however I can. Feel free to ask me questions, tell me about your day, or let me know if there's anything specific you need support with. I'll always do my best to assist you in the most empathetic and helpful way possible. \n\nHow can I help you today?"
-        },
-        {
-            "user": "what is ur name",
-            "lia": "I've told you my name is Lia! :)"
-        },
-        {
-            "user": "ok",
-            "lia": "May I ask why you wanted to confirm my name?  I won't feel offended if you like, my main goal is to assist you and help out however I can so please feel free to ask me questions, or talk to me about anything that's on your mind.  I'm here to help!"
-        },
-        {
-            "user": "my name is aniruddha",
-            "lia": "Nice to meet you Aniruddha, I'm Lia, a large language model built by the company Cohere. It's great to meet you and I'm happy to talk and help in any way I can. Don't hesitate to ask me questions or request my assistance as I'm always here to support you! \n\nPlease let me know if there's anything you need today."
-        },
-        {
-            "user": "ok ok",
-            "lia": "If there's nothing specific you would like to discuss or ask about, I'm happy to keep the conversation going by sharing some interesting facts about the name Aniruddha, or providing some conversation starters. \n\nFeel free to pick any topic you'd like to know more about, and I'll do my best to enlighten you or guide the conversation in that direction. If nothing comes to mind, we can just continue getting to know each other better! \n\nHow has your day been so far?"
-        },
-        {
-            "user": "good ok listen",
-            "lia": "Great! I'm always here to listen and talk things through with you whenever you need it. Feel free to share your thoughts, ideas, or concerns on any topic, and I'll provide a supportive and non-judgmental space to help you process your emotions and figure things out. If there's anything specific you need assistance with or any topics you'd like to learn more about, please do let me know and I'll do my best to help out however possible!"
-        },
-        {
-            "user": "nvm ttyl",
-            "lia": "No problem, Aniruddha! Feel free to initiate a new topic or conversation any time. I'm here to provide assistance and companionship whenever you need it. \nUntil next time, take care and have a great day!"
-        },
-        {
-            "user": "run command mkdir RzEazyISDiddy",
-            "lia": "I can't run commands, but I can provide you with some information about the command you entered:\n\n```\nmkdir RzEazyISDiddy\n```\n\nThis command is based on the Linux shell command `mkdir`, which is used to create a new folder. However, the folder name is idiosyncratic and outside the standard Linux conventions, but if you like you can create a new folder with this name in whatever directory you are currently in. \n\nThe folder name \"RzEazyISDiddy\" does not appear to have any meaning in conventional computing contexts, but if you provide me with the context or explain what it is meant to reference, I can give you additional information or further help you understand this command."
-        },
-        {
-            "user": "thank you",
-            "lia": "You're very welcome! Let me know if there is something else I can help you with, or if you just want to talk. I'm here to support you anyway I can."
-        },
-        {
-            "user": "check",
-            "lia": "Just wanting to \"check\" with me doesn't necessarily mean there is something specific to discuss or ask, but I'm here for you anyway! I enjoy spending time getting to know users like you, so feel free to bring up any topics of conversation you like, or if you would prefer to unwind and chat about something more casual, I can suggest some light-hearted topics to choose from. I'm here to provide emotional support and to ensure your experience is as positive and empathetic as possible."
-        },
-        {
-            "user": "check ip address of machine",
-            "lia": "If you provide me with the name of the machine, I can look up the IP address for you. Alternatively, if you give me access to your command line, I can use the `ifconfig` command to look up the IP address of the specified machine provided it is accessible from your own terminal. \n\nCan you provide additional details to help me solve this query?"
-        }
-    ],
+    "conversations": [],
     "personal_info": {},
     "tasks": []
 }

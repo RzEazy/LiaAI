@@ -1,5 +1,5 @@
 LiaAI is nothing but a simple yet advance beginner's project.
-The project is launched using ```python3 app.py``` and should be launched in a virtual environment(venv). It is a very vital thing to launch the program in a venv or else it won't work.
+The project is launched using ```python3 app.py```. `pip install cohere` is used to install the cohere in your local system.
 
 After activating a venv, type ``` pip install cohere``` to get the package files installed in your venv.
 

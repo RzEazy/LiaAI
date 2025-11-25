@@ -1,9 +1,3 @@
-LiaAI is nothing but a simple yet advance beginner's project.
-The project is launched using ```python3 app.py```. `pip install cohere` is used to install the cohere in your local system.
+LiaAI — 0.2.2
 
-
-
-After doing so, you can finally start the program.
-*Note: This is just the alpha stage of this project. It is not even properly patched. So, don't get your hopes too high.*
-
-peace...!
+Improved system command handling, memory reliability. Removal of "run command", instead just write what you want her to do. 

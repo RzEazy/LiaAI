@@ -1,3 +1,6 @@
+# This file is deprecated. Use core/lia_main.py instead.
+# Keeping for backward compatibility.
+
 import cohere
 import json
 import subprocess
@@ -87,7 +90,7 @@ macOS: open -a "Google Chrome"
         return response.text.strip()
 
     def build_history(self):
-        """Keeps convo memory short so she doesn’t act cooked."""
+        """Keeps convo memory short so she doesn't act cooked."""
         
         history = ""
         for conv in self.memory["conversations"]:

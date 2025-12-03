@@ -1,0 +1,69 @@
+import re
+from typing import List, Tuple
+
+class SafetyChecker:
+    def __init__(self):
+        # Dangerous OS commands that should be blocked
+        self.dangerous_commands = [
+            "rm -rf", "rm --no-preserve-root", "format", 
+            "mkfs", "dd if=", "shutdown", "del /s",
+            "rd /s", ":(){ :|:& };:", "fork bomb"
+        ]
+        
+        # Dangerous osquery operations
+        self.dangerous_osquery_tables = [
+            # Tables that could expose sensitive data
+            "keychain_items", "shadow", "etc_shadow"
+        ]
+        
+        # Restricted columns that might expose sensitive data
+        self.restricted_columns = [
+            "password", "passwd", "secret", "key", "token"
+        ]
+    
+    def is_os_command_safe(self, command: str) -> bool:
+        """Check if an OS command is safe to execute"""
+        command_lower = command.lower()
+        return not any(dangerous in command_lower for dangerous in self.dangerous_commands)
+    
+    def is_osquery_sql_safe(self, sql: str) -> Tuple[bool, str]:
+        """
+        Check if an osquery SQL statement is safe to execute
+        Returns (is_safe, reason)
+        """
+        sql_lower = sql.lower().strip()
+        
+        # Check for destructive operations
+        if any(keyword in sql_lower for keyword in ["drop", "delete", "insert", "update", "create"]):
+            return False, "Destructive operations are not allowed"
+        
+        # Check for union injections
+        if "union" in sql_lower and "select" in sql_lower:
+            # Simple check for UNION SELECT patterns that might indicate injection
+            union_pattern = r"\bunion\b.+?\bselect\b"
+            if re.search(union_pattern, sql_lower, re.IGNORECASE):
+                return False, "UNION queries are not allowed"
+        
+        # Check for excessive joins that might indicate complex attacks
+        if sql_lower.count("join") > 3:
+            return False, "Excessive JOIN operations are not allowed"
+        
+        # Check for time-based attacks
+        if "sleep" in sql_lower or "delay" in sql_lower:
+            return False, "Time-delay functions are not allowed"
+        
+        return True, "Safe"
+    
+    def sanitize_osquery_result(self, result: List[dict]) -> List[dict]:
+        """
+        Remove sensitive columns from osquery results
+        """
+        sanitized = []
+        for row in result:
+            sanitized_row = {}
+            for key, value in row.items():
+                # Skip restricted columns
+                if not any(restricted in key.lower() for restricted in self.restricted_columns):
+                    sanitized_row[key] = value
+            sanitized.append(sanitized_row)
+        return sanitized

@@ -1,22 +1,26 @@
-from lia_ai import Lia
+from core.lia_main import LiaMain
 
-lia = Lia(
-    api_key="doeM32W2so3ubfYYs673lmiOmUzwN15weKfB68bj",
+# Initialize Lia with your Cohere API key
+lia = LiaMain(
+    api_key="API-KEY",
     memory_file="lia_memory.json"
 )
 
 def chat():
-    print()
+    print("LiaAI - Modular Cyber Assistant")
+    print("Ask me anything - I can chat, run commands, or query system security!")
+    print("Type 'exit', 'quit', 'bye', or 'goodbye' to exit.\n")
 
     while True:
         user_input = input("You: ")
 
-        if user_input.lower() in ["exit", "quit", "bye","goodbye"]:
+        if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
             print("Lia: Peace!")
             break
 
-        response = lia.generate_response(user_input)
+        response = lia.process_input(user_input)
         print("Lia:", response)
+        print()  # Add spacing for readability
 
 if __name__ == "__main__":
     chat()

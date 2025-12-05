@@ -165,6 +165,17 @@ cd /path/to/LiaAI
 PYTHONPATH=. python rag/ingestion/ingest_osquery.py
 ```
 
+### Checking ChromaDB Embeddings
+To verify that embeddings have been properly ingested, you can check the database directly:
+
+```bash
+# List collections and document counts
+sqlite3 data/chroma_db/chroma.sqlite3 "SELECT c.name, COUNT(s.id) as segments, COUNT(e.id) as embeddings FROM collections c LEFT JOIN segments s ON c.id = s.collection LEFT JOIN embeddings e ON s.id = e.segment_id GROUP BY c.id, c.name;"
+
+# List available collections
+sqlite3 data/chroma_db/chroma.sqlite3 "SELECT id, name, dimension FROM collections;"
+```
+
 ## ▶️ Usage
 
 Run the application:

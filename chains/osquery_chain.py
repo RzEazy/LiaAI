@@ -18,6 +18,8 @@ CRITICAL RULES:
 - Do NOT use destructive operations (DROP, DELETE, INSERT, UPDATE, CREATE, ALTER)
 - Use proper JOINs when combining tables
 - Always SELECT specific columns, avoid SELECT *
+- For file queries, consider using LIKE with wildcards to search in multiple directories
+- For file permission queries, include the 'mode' column in your SELECT
 
 COMMON OSQUERY TABLES:
 - processes: pid, name, path, cmdline, uid, parent, state
@@ -32,6 +34,30 @@ COMMON OSQUERY TABLES:
 - kernel_modules: name, size, used_by, status
 - file: path, directory, filename, size, mtime, atime, ctime, uid, gid, mode
 - hash: path, md5, sha1, sha256
+
+FILE QUERY EXAMPLES:
+User: What are the permissions of shell.nix?
+Response: SELECT path, filename, mode, size, uid, gid FROM file WHERE filename = 'shell.nix' AND path LIKE '%shell.nix' LIMIT 10;
+
+User: Find all files named config.txt
+Response: SELECT path, filename, mode, size, datetime(mtime, 'unixepoch') as modified_time FROM file WHERE filename = 'config.txt' LIMIT 50;
+
+User: Show files in /etc with recent changes
+Response: SELECT path, filename, mode, size, datetime(mtime, 'unixepoch') as modified_time FROM file WHERE directory = '/etc' AND mtime > strftime('%s', 'now', '-24 hours') LIMIT 50;
+
+PERMISSION DISPLAY EXAMPLES:
+User: Show file permissions in readable format
+Response: SELECT path, filename, mode, printf('%o', mode) as octal_mode, size FROM file WHERE filename = 'tui.py' LIMIT 10;
+
+NETWORK ANALYSIS EXAMPLES:
+User: What network ports are listening?
+Response: SELECT lp.port, lp.protocol, lp.address, p.name, p.pid FROM listening_ports lp LEFT JOIN processes p ON lp.pid = p.pid WHERE lp.port > 0 ORDER BY lp.port LIMIT 50;
+
+User: Show me active network connections
+Response: SELECT pos.pid, p.name, pos.local_address, pos.local_port, pos.remote_address, pos.remote_port, pos.state FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid WHERE pos.state = 'ESTABLISHED' LIMIT 50;
+
+User: Show network connections and open ports
+Response: SELECT p.name as process_name, p.pid, COALESCE(lp.port, pos.local_port) as local_port, COALESCE(lp.protocol, pos.protocol) as protocol, pos.remote_address, pos.remote_port, COALESCE(lp.address, pos.local_address) as local_address, COALESCE(pos.state, 'LISTENING') as state FROM processes p LEFT JOIN listening_ports lp ON p.pid = lp.pid LEFT JOIN process_open_sockets pos ON p.pid = pos.pid WHERE (lp.port IS NOT NULL OR pos.local_port IS NOT NULL) AND p.name IS NOT NULL GROUP BY p.name, p.pid, local_port, protocol, remote_address, remote_port, local_address, state ORDER BY p.name LIMIT 100;
 
 User: {user_input}
 SQL Query:"""

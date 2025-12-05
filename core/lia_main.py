@@ -29,9 +29,16 @@ class LiaMain:
         
         # Initialize formatter
         self.formatter = ResultFormatter()
+
     
     def process_input(self, user_input: str) -> str:
         """Main entry point for processing user input"""
+
+        if "dashboard" in user_input.lower() or "security status" in user_input.lower():
+            from tools.security_dashboard import SecurityDashboard
+            dashboard = SecurityDashboard(self)
+            return dashboard.generate_dashboard()
+
         # Get context from memory
         context = self.memory.get_memory_context()
         
@@ -127,3 +134,4 @@ class LiaMain:
             self.memory.add_query(sql_query, str(results))
         
         return formatted_response
+

@@ -6,6 +6,7 @@ Inspired by: Gemini CLI • Claude • Warp • Perplexity
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from rich.align import Align
 
 try:
     from rich.console import Console, Group
@@ -32,24 +33,44 @@ class LiaTUI:
     def initialize_lia(self):
         api_key = os.getenv("COHERE_API_KEY", "doeM32W2so3ubfYYs673lmiOmUzwN15weKfB68bj")
         try:
-            self.lia = LiaMain(api_key=api_key, memory_file="lia_memory.json")
+            self.lia = LiaMain(api_key=api_key, memory_file="Hound_memory.json")
         except Exception as e:
             self.console.print(f"[bold red]Failed to initialize LiaAI: {e}[/bold red]")
             sys.exit(1)
 
     def header(self):
-        title = Text("LiaAI\n", style="bold #a78bfa")
-        subtitle = Text("Modular Cyber Assistant", style="#c4b5fd")
-        tagline = Text("Security • Intelligence • Control", style="dim")
+        # ───── HoundAI ASCII Logo ─────
+        logo = Text(
+            " ██╗  ██╗ ██████╗ ██╗   ██╗███╗   ██╗██████╗ \n"
+            " ██║  ██║██╔═══██╗██║   ██║████╗  ██║██╔══██╗\n"
+            " ███████║██║   ██║██║   ██║██╔██╗ ██║██║  ██║\n"
+            " ██╔══██║██║   ██║██║   ██║██║╚██╗██║██║  ██║\n"
+            " ██║  ██║╚██████╔╝╚██████╔╝██║ ╚████║██████╔╝\n"
+            " ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═════╝ \n",
+            style="bold #a78bfa"
+        )
+
+        subtitle = Text("Cybersecurity • Threat Hunting • Intelligence", style="bold #c4b5fd")
+        tagline  = Text("Always watching. Always ready.", style="dim white")
+
+        # Group everything and center the subtitle/tagline inside the panel
+        content = Group(
+            logo,
+            "\n",
+            Align.center(subtitle),
+            Align.center(tagline)
+        )
 
         banner = Panel(
-            Group(title, subtitle, "\n", tagline),
+            content,
             style="on #0f0f1a",
             border_style="#4c1d95",
-            padding=(1, 4),
+            padding=(2, 6),
             expand=False,
         )
-        return Padding(banner, (2, 0, 1, 0))
+
+        # Finally center the entire panel on screen
+        return Align.center(banner)
 
     def user_message(self, text: str):
         label = Text("You", style="bold #c4b5fd")
@@ -64,7 +85,7 @@ class LiaTUI:
         return Padding(bubble, pad=(0, 4, 1, 0))  # Left-aligned with margin
 
     def assistant_message(self, text: str):
-        label = Text("LiaAI\n", style="bold #22d3ee")
+        label = Text("HoundAI\n", style="bold #22d3ee")
         try:
             md = Markdown(
                 text,
@@ -103,7 +124,7 @@ class LiaTUI:
 
         # Initial greeting
         greeting = (
-            "Hello! I'm **LiaAI**, your advanced cybersecurity assistant.\n\n"
+            "Hello! I'm **HoundAI**, your advanced cybersecurity assistant.\n\n"
             "**How can I assist you today?**"
         )
         self.console.print(self.assistant_message(greeting))

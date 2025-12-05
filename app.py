@@ -2,7 +2,7 @@ from core.lia_main import LiaMain
 
 # Initialize Lia with your Cohere API key
 lia = LiaMain(
-    api_key="API-KEY",
+    api_key="doeM32W2so3ubfYYs673lmiOmUzwN15weKfB68bj",
     memory_file="lia_memory.json"
 )
 

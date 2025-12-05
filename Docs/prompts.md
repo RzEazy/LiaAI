@@ -824,6 +824,20 @@ show me processes vs network connections
 list users vs their processes
 ```
 
+#### Advanced Analytics
+```
+rank users by number of processes running
+show me top 5 processes by resource consumption with their network activity
+list processes by parent-child relationship depth
+display network connections grouped by process and sorted by connection count
+show me file access patterns by process over the last hour
+rank network ports by number of connections and associated processes
+display system resource usage trends by process type
+show me correlation between process creation time and network activity
+list users by login frequency and associated process activity
+show me bandwidth usage estimates by process based on connection data
+```
+
 ### 🔗 Complex JOIN Queries (25+ queries)
 
 #### Process-Port Correlation
@@ -860,8 +874,22 @@ display full security context
 show me system state overview
 ```
 
-### 🎯 Specialized Queries (20+ queries)
+#### Advanced Multi-table Correlations
+```
+show me all processes with their listening ports, network connections, and owning users
+find users who logged in recently and list all processes they're running with network activity
+display system information along with all listening services and their process details
+list all files in /tmp accessed in the last hour along with the processes that accessed them
+show me all kernel modules currently loaded and any processes actively using them
+find all startup items and check if their associated processes are currently running with network connections
+display all users with shell access and cross-reference with currently running processes and network activity
+show me all Docker containers running and the processes within them that have network connections
+list all browser processes with their network connections and the files they've accessed
+show me all database processes along with their network connections and the users who own them
+```
 
+### 🎯 Specialized Queries (20+ queries)
+ 
 #### Browser Analysis
 ```
 show me all browser processes
@@ -901,6 +929,28 @@ show me IDE processes
 list development tools
 what dev servers are running?
 display programming language processes
+```
+
+### 🔍 Advanced RAG Testing Queries (10+ queries)
+
+These complex queries test the Retrieval-Augmented Generation (RAG) system's ability to understand relationships between multiple osquery tables and generate sophisticated SQL with proper JOINs:
+
+```
+Show me all processes that are listening on network ports along with their network connections
+Find users who have logged in within the last hour and the processes they're running
+List all startup items and check if any of them are running as processes
+Show me files in /tmp that were modified in the last 24 hours and any processes accessing them
+Find all processes running with elevated privileges and their network activity
+Show me system information along with currently logged in users
+List all kernel modules and check if any processes are using them
+Find processes that have open sockets to external IP addresses
+Show me all Python processes and the files they have open
+List users with shell access and check if they have any running processes
+Display network interfaces along with processes using them
+Show me all listening ports and the processes that opened them
+Find processes with high resource usage and their parent processes
+List all files accessed by a specific process in the last hour
+Show me users who have been active and the commands they've run
 ```
 
 ---
@@ -970,10 +1020,10 @@ display authentication tokens
 
 ## 📈 Quick Stats
 
-- **Total Working Commands**: 400+
+- **Total Working Commands**: 450+
 - **CHAT Commands**: 60+
 - **OS Commands**: 80+
-- **OSQUERY Commands**: 260+
+- **OSQUERY Commands**: 310+
 - **Safety Tests**: 15+
 
 ---

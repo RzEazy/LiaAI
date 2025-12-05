@@ -2,9 +2,13 @@ import cohere
 import re
 from typing import Dict, Any, Optional, List
 from .base_chain import BaseChain
+from rag.retriever import Retriever
+from rag.vectordb import VectorDB
 
 OSQUERY_PROMPT_TEMPLATE = """
 You are an expert in osquery SQL. Convert the user's security/forensics question into a valid osquery SQL statement.
+
+{examples}
 
 CRITICAL RULES:
 - Respond ONLY with the SQL query, nothing else
@@ -29,34 +33,6 @@ COMMON OSQUERY TABLES:
 - file: path, directory, filename, size, mtime, atime, ctime, uid, gid, mode
 - hash: path, md5, sha1, sha256
 
-ADVANCED EXAMPLES:
-User: Show me all running processes
-Response: SELECT pid, name, cmdline, parent, uid FROM processes LIMIT 50;
-
-User: What network ports are listening?
-Response: SELECT lp.port, lp.protocol, lp.address, p.name, p.pid FROM listening_ports lp LEFT JOIN processes p ON lp.pid = p.pid LIMIT 50;
-
-User: Show me active network connections
-Response: SELECT pos.pid, p.name, pos.local_address, pos.local_port, pos.remote_address, pos.remote_port, pos.protocol FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid WHERE pos.remote_port != 0 LIMIT 50;
-
-User: Are there any suspicious login attempts in the last hour?
-Response: SELECT time, user, host, tty FROM logged_in_users WHERE time > strftime('%s', 'now') - 3600 LIMIT 50;
-
-User: Find processes running as root
-Response: SELECT pid, name, path, cmdline FROM processes WHERE uid = 0 LIMIT 50;
-
-User: Show me Python processes
-Response: SELECT pid, name, cmdline, parent FROM processes WHERE name LIKE '%python%' OR cmdline LIKE '%python%' LIMIT 50;
-
-User: What files were modified in /tmp in the last 24 hours?
-Response: SELECT path, filename, mtime, size, uid FROM file WHERE directory = '/tmp' AND mtime > strftime('%s', 'now') - 86400 LIMIT 50;
-
-User: Show system information
-Response: SELECT hostname, cpu_brand, physical_memory, hardware_model FROM system_info LIMIT 1;
-
-User: List users with shell access
-Response: SELECT uid, username, shell, directory FROM users WHERE shell NOT IN ('', '/usr/bin/false', '/sbin/nologin') LIMIT 50;
-
 User: {user_input}
 SQL Query:"""
 
@@ -66,6 +42,14 @@ class OsqueryChain(BaseChain):
     def __init__(self, co_client: cohere.Client):
         self.co = co_client
         self.max_retries = 2
+        
+        # Initialize RAG components
+        try:
+            vectordb = VectorDB()
+            self.retriever = Retriever(vectordb)
+        except Exception as e:
+            print(f"Warning: Could not initialize RAG components: {e}")
+            self.retriever = None
         
     def process(self, user_input: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -149,7 +133,57 @@ class OsqueryChain(BaseChain):
     
     def _generate_sql(self, user_input: str, context: Dict[str, Any], attempt: int) -> str:
         """Generate SQL query using LLM"""
-        prompt = OSQUERY_PROMPT_TEMPLATE.format(user_input=user_input)
+        # Retrieve relevant documentation examples
+        examples = ""
+        if self.retriever:
+            try:
+                docs = self.retriever.search(
+                    query=user_input,
+                    collection="osquery_docs",
+                    n_results=3
+                )
+                
+                if docs:
+                    examples = "RELEVANT DOCUMENTATION EXAMPLES:\n"
+                    for doc in docs:
+                        examples += f"{doc['text']}\n\n"
+            except Exception as e:
+                print(f"Warning: Could not retrieve documentation: {e}")
+        
+        # If no relevant docs found, use original examples
+        if not examples:
+            examples = """ADVANCED EXAMPLES:
+User: Show me all running processes
+Response: SELECT pid, name, cmdline, parent, uid FROM processes LIMIT 50;
+
+User: What network ports are listening?
+Response: SELECT lp.port, lp.protocol, lp.address, p.name, p.pid FROM listening_ports lp LEFT JOIN processes p ON lp.pid = p.pid LIMIT 50;
+
+User: Show me active network connections
+Response: SELECT pos.pid, p.name, pos.local_address, pos.local_port, pos.remote_address, pos.remote_port, pos.protocol FROM process_open_sockets pos JOIN processes p ON pos.pid = p.pid WHERE pos.remote_port != 0 LIMIT 50;
+
+User: Are there any suspicious login attempts in the last hour?
+Response: SELECT time, user, host, tty FROM logged_in_users WHERE time > strftime('%s', 'now') - 3600 LIMIT 50;
+
+User: Find processes running as root
+Response: SELECT pid, name, path, cmdline FROM processes WHERE uid = 0 LIMIT 50;
+
+User: Show me Python processes
+Response: SELECT pid, name, cmdline, parent FROM processes WHERE name LIKE '%python%' OR cmdline LIKE '%python%' LIMIT 50;
+
+User: What files were modified in /tmp in the last 24 hours?
+Response: SELECT path, filename, mtime, size, uid FROM file WHERE directory = '/tmp' AND mtime > strftime('%s', 'now') - 86400 LIMIT 50;
+
+User: Show system information
+Response: SELECT hostname, cpu_brand, physical_memory, hardware_model FROM system_info LIMIT 1;
+
+User: List users with shell access
+Response: SELECT uid, username, shell, directory FROM users WHERE shell NOT IN ('', '/usr/bin/false', '/sbin/nologin') LIMIT 50;"""
+        
+        prompt = OSQUERY_PROMPT_TEMPLATE.format(
+            user_input=user_input,
+            examples=examples
+        )
         
         # Add context from previous queries if available
         recent_queries = context.get("queries", [])

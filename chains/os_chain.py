@@ -2,127 +2,23 @@ import cohere
 import platform
 from typing import Dict, Any, Optional
 from .base_chain import BaseChain
+from rag.retriever import Retriever
+from rag.vectordb import VectorDB
 
 OS_COMMAND_PROMPT_TEMPLATE = """
-Convert the user's request into a command depending on the OS.
+Convert the user's request into a precise command based on the OS and relevant documentation.
 
 OS: {os_type}
+
+{examples}
 
 RULES:
 - If it's NOT a computer action, reply ONLY with: NO_COMMAND
 - No explanation, no extra text, only the command.
 - Be precise with the OS-specific syntax
-
-Examples:
-User: make a folder called test
-Windows: mkdir test
-Linux: mkdir test
-macOS: mkdir test
-
-User: list files in current directory
-Windows: dir
-Linux: ls -la
-macOS: ls -la
-
-User: show current directory
-Windows: cd
-Linux: pwd
-macOS: pwd
-
-User: show me the current path
-Windows: cd
-Linux: pwd
-macOS: pwd
-
-User: how much disk space is free?
-Windows: wmic logicaldisk get size,freespace,caption
-Linux: df -h
-macOS: df -h
-
-User: display RAM usage
-Windows: systeminfo | findstr /C:"Total Physical Memory" /C:"Available Physical Memory"
-Linux: free -h
-macOS: vm_stat
-
-User: check memory usage
-Windows: systeminfo | findstr Memory
-Linux: free -h
-macOS: vm_stat
-
-User: show disk usage
-Windows: wmic logicaldisk get size,freespace,caption
-Linux: df -h
-macOS: df -h
-
-User: what's my IP address?
-Windows: ipconfig
-Linux: ip addr show
-macOS: ifconfig
-
-User: show network interfaces
-Windows: ipconfig /all
-Linux: ip link show
-macOS: ifconfig
-
-User: display environment variables
-Windows: set
-Linux: printenv
-macOS: printenv
-
-User: show running processes
-Windows: tasklist
-Linux: ps aux
-macOS: ps aux
-
-User: open chrome
-Windows: start chrome
-Linux: google-chrome &
-macOS: open -a "Google Chrome"
-
-User: ping google.com
-Windows: ping google.com
-Linux: ping -c 4 google.com
-macOS: ping -c 4 google.com
-
-User: show system information
-Windows: systeminfo
-Linux: uname -a
-macOS: uname -a
-
-User: create a file called test.txt
-Windows: type nul > test.txt
-Linux: touch test.txt
-macOS: touch test.txt
-
-User: delete file test.txt
-Windows: del test.txt
-Linux: rm test.txt
-macOS: rm test.txt
-
-User: copy file.txt to backup.txt
-Windows: copy file.txt backup.txt
-Linux: cp file.txt backup.txt
-macOS: cp file.txt backup.txt
-
-User: show contents of file.txt
-Windows: type file.txt
-Linux: cat file.txt
-macOS: cat file.txt
-
-User: search for "error" in log.txt
-Windows: findstr "error" log.txt
-Linux: grep "error" log.txt
-macOS: grep "error" log.txt
-
-User: who am I
-Windows: whoami
-Linux: whoami
-macOS: whoami
-
-User: show current user
-Windows: echo %USERNAME%
-Linux: whoami
-macOS: whoami
+- Use the documentation examples as guidance for proper command structure
+- Include necessary flags and options based on the documentation
+- For complex commands, prioritize the most commonly used options
 
 User: {user_input}
 Command:"""
@@ -131,6 +27,14 @@ class OSCommandChain(BaseChain):
     def __init__(self, co_client: cohere.Client):
         self.co = co_client
         self.os_type = self._get_os_type()
+        
+        # Initialize RAG components
+        try:
+            vectordb = VectorDB()
+            self.retriever = Retriever(vectordb)
+        except Exception as e:
+            print(f"Warning: Could not initialize RAG components: {e}")
+            self.retriever = None
     
     def _get_os_type(self) -> str:
         """Get normalized OS type"""
@@ -149,10 +53,78 @@ class OSCommandChain(BaseChain):
         if context is None:
             context = {}
         
+        # Retrieve relevant documentation examples
+        examples = ""
+        if self.retriever:
+            try:
+                docs = self.retriever.search(
+                    query=user_input,
+                    collection="os_commands",
+                    n_results=5  # Increase to get more relevant docs
+                )
+                
+                if docs:
+                    examples = "RELEVANT COMMAND DOCUMENTATION:\n"
+                    for doc in docs:
+                        examples += f"{doc['text']}\n\n"
+            except Exception as e:
+                print(f"Warning: Could not retrieve documentation: {e}")
+        
+        # If no relevant docs found, use original examples
+        if not examples:
+            examples = """COMMAND DOCUMENTATION EXAMPLES:
+Command: ls (Linux/macOS)
+Category: File Operations
+Description: List directory contents
+Syntax: ls [OPTION]... [FILE]...
+Detailed Description: List information about the FILEs (the current directory by default).
+Common Options:
+  -a, --all: Do not ignore entries starting with .
+  -l: Use a long listing format
+  -h, --human-readable: Print human readable sizes
+Examples:
+  ls -la: List all files in long format
+  ls -lh: Show files with human-readable sizes
+
+Command: mkdir (Cross-platform)
+Category: File Operations
+Description: Make directories
+Syntax (Linux/macOS): mkdir [OPTION] DIRECTORY...
+Syntax (Windows): mkdir [drive:]path
+Detailed Description: Create the DIRECTORY(ies), if they do not already exist.
+Options (Linux/macOS):
+  -p, --parents: Make parent directories as needed
+Examples:
+  mkdir new_folder: Create a new directory
+  mkdir -p path/to/new/folder: Create nested directories
+
+Command: ps (Linux/macOS)
+Category: Process Management
+Description: Report a snapshot of the current processes
+Syntax: ps [options]
+Common Options:
+  aux: List all processes (BSD syntax)
+  -ef: Full format listing (POSIX syntax)
+Examples:
+  ps aux: Show all running processes
+  ps -ef: Show full process list
+
+Command: grep (Linux/macOS)
+Category: Text Processing
+Description: Search for patterns in files
+Syntax: grep [OPTIONS] PATTERN [FILE...]
+Common Options:
+  -r, --recursive: Read all files under each directory recursively
+  -i, --ignore-case: Ignore case distinctions
+Examples:
+  grep 'error' logfile.txt: Search for 'error' in logfile
+  grep -r 'function' ./src: Recursively search for 'function'"""
+
         # Construct prompt
         prompt = OS_COMMAND_PROMPT_TEMPLATE.format(
             os_type=self.os_type,
-            user_input=user_input
+            user_input=user_input,
+            examples=examples
         )
         
         try:

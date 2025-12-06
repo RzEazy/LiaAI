@@ -1,6 +1,0 @@
-cohere
-pyqt6
-requests
-langchain
-tabulate
-osquery
